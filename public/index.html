@@ -1,37 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Shortener</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gabimaru URL Shortener</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>URL Shortener</h1>
-        <form id="shortenForm">
-            <label for="url">Enter URL to shorten:</label>
-            <input type="url" id="url" name="url" required>
-            <button type="submit">Shorten URL</button>
-        </form>
-        <div id="result">
-            <p id="shortenedUrl"></p>
-        </div>
+  <div class="container">
+    <h1>Welcome to Gabimaru URL Shortener</h1>
+    <form id="shorten-form">
+      <label for="url-input">Enter URL:</label>
+      <input type="url" id="url-input" placeholder="Enter URL here" required>
+      <button type="submit">Shorten URL</button>
+    </form>
+    <div id="shortened-url-container">
+      <p>Shortened URL: <span id="shortened-url"></span></p>
     </div>
-
-    <script>
-        const form = document.getElementById('shortenForm');
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const url = document.getElementById('url').value;
-            const response = await fetch('/shorten', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
-            });
-            const data = await response.json();
-            document.getElementById('shortenedUrl').innerText = `Shortened URL: ${data.shortUrl}`;
-        });
-    </script>
+  </div>
+  <script src="/script.js"></script>
 </body>
 </html>
