@@ -1,46 +1,35 @@
-// Dependencies
 const express = require('express');
+const path = require('path');
+const TinyURL = require('tinyurl');
 const fetch = require('node-fetch');
-const { nanoid } = require('nanoid');
-const tinyurl = require('tinyurl'); // TinyURL dependency
 
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
+const SELF_URL = "https://url-shortener-1-t0f0.onrender.com"; // Replace with actual Render URL
 
-// Self pinging every 5 minutes
-const selfUrl = ["https://your-app.onrender.com"];  // Replace with your actual URL
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-function uptimePing() {
-  selfUrl.forEach(url => {
-    fetch(url)
-      .then(response => console.log(`Pinging: ${url}, Status: ${response.status}`))
-      .catch(err => console.error('Ping failed:', err));
-  });
-}
+// Routes
+app.post('/shorten', async (req, res) => {
+  const longUrl = req.body.url;
 
-// Ping the site every 5 minutes
-setInterval(uptimePing, 5 * 60 * 1000);
-
-// Shorten a URL using TinyURL
-app.get('/shorten', (req, res) => {
-  const urlToShorten = req.query.url;
-  
-  if (!urlToShorten) {
-    return res.status(400).json({ error: 'URL is required' });
+  try {
+    const shortUrl = await TinyURL.shorten(longUrl);
+    res.send(`<p style="font-family: sans-serif;">Shortened URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p><a href="/">Back</a>`);
+  } catch (err) {
+    res.status(500).send(`<p>Something went wrong: ${err.message}</p><a href="/">Try Again</a>`);
   }
-
-  tinyurl.shorten(urlToShorten, function(shortenedUrl) {
-    res.json({
-      originalUrl: urlToShorten,
-      shortenedUrl: shortenedUrl
-    });
-  });
 });
 
-// Serve static HTML files (if needed for front-end)
-app.use(express.static('public'));
-
-// Start server
-app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
+
+// Self-pinger to prevent sleep on Render
+setInterval(() => {
+  fetch(SELF_URL)
+    .then(() => console.log("Pinged self to stay awake"))
+    .catch(err => console.error("Ping failed:", err));
+}, 1000 * 60 * 5); // every 5 mins
