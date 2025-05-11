@@ -1,52 +1,47 @@
-const express = require('express');
-const fetch = require('node-fetch');
-const tinyurl = require('tinyurl');
+import express from 'express';
+import path from 'path';
+import { nanoid } from 'nanoid';
+import fetch from 'node-fetch';
+
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve static files (e.g., HTML, CSS)
-app.use(express.static('public'));
+// Handle URL shortening
+const links = {};
 
-// Route to handle URL shortening
-app.post('/shorten', (req, res) => {
-    const { url } = req.body;
-
-    if (!url) {
-        return res.status(400).send('No URL provided.');
-    }
-
-    // Create a shortened URL using TinyURL API
-    tinyurl.shorten(url, (shortenedUrl) => {
-        if (shortenedUrl) {
-            return res.json({ shortUrl: shortenedUrl });
-        } else {
-            return res.status(500).send('Error shortening URL');
-        }
-    });
+app.get('/shorten', (req, res) => {
+  const { url } = req.query;
+  const id = nanoid(6);
+  const shortenedUrl = `https://${req.get('host')}/${id}`;
+  links[id] = url;
+  res.send({ shortenedUrl });
 });
 
-// Self-ping to keep the app alive on Render (or any cloud service)
-setInterval(() => {
-    const selfUrl = 'https://your-app.onrender.com';  // Replace with your actual URL
-    fetch(selfUrl)
-        .then(res => res.text())
-        .then(body => console.log('Ping successful:', body))
-        .catch(err => console.error('Error pinging:', err));
-}, 5 * 60 * 1000); // Ping every 5 minutes
-
-// Route to handle redirection from shortened URLs
-app.get('/:shortenedUrl', (req, res) => {
-    const { shortenedUrl } = req.params;
-
-    // Here, you would lookup the shortened URL in your database or memory store
-    // For simplicity, we’ll just redirect to the TinyURL service
-    res.redirect(`https://tinyurl.com/${shortenedUrl}`);
+// Redirect shortened URLs
+app.get('/:id', (req, res) => {
+  const url = links[req.params.id];
+  if (url) {
+    res.redirect(url);
+  } else {
+    res.status(404).send('URL not found');
+  }
 });
 
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+
+  // Self Uptime Pinger (ping the site every 5 minutes)
+  const selfUrl = "https://your-app-name.onrender.com"; // replace with your actual Render app URL
+  setInterval(async () => {
+    try {
+      await fetch(selfUrl);
+      console.log('Self-pinged successfully!');
+    } catch (err) {
+      console.log('Error pinging:', err);
+    }
+  }, 5 * 60 * 1000); // Ping every 5 minutes
 });
