@@ -1,19 +1,14 @@
 {
-  "name": "url-shortener-app",
+  "name": "gabimaru-url-shortener",
+  "type": "module",
   "version": "1.0.0",
-  "description": "A simple URL shortener app using TinyURL",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "^4.18.1",
-    "node-fetch": "^3.1.0",
-    "tinyurl": "^1.0.1"
-  },
-  "engines": {
-    "node": "16.x"
-  },
-  "author": "Ayodele David (Gabimaru)",
-  "license": "MIT"
+    "express": "^4.18.2",
+    "nanoid": "^5.0.0",
+    "node-fetch": "^3.3.2"
+  }
 }
