@@ -1,23 +1,29 @@
-document.getElementById('shorten-form').addEventListener('submit', function(e) {
+document.getElementById('shorten-form').addEventListener('submit', async function (e) {
   e.preventDefault();
 
-  const urlInput = document.getElementById('url-input').value;
-  const shortenedUrlContainer = document.getElementById('shortened-url-container');
-  const shortenedUrlElement = document.getElementById('shortened-url');
+  const url = document.getElementById('url-input').value;
+  const resultBox = document.getElementById('result');
 
-  if (urlInput) {
-    fetch(`/shorten?url=${encodeURIComponent(urlInput)}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.shortenedUrl) {
-          shortenedUrlContainer.style.display = 'block';
-          shortenedUrlElement.textContent = data.shortenedUrl;
-        } else {
-          alert('There was an error shortening the URL.');
-        }
-      })
-      .catch(error => {
-        alert('Something went wrong: ' + error);
-      });
+  try {
+    const response = await fetch('/shorten', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `url=${encodeURIComponent(url)}`
+    });
+
+    const data = await response.json();
+
+    if (data.shortUrl) {
+      resultBox.innerHTML = `
+        <p style="font-family: sans-serif;">
+          Shortened URL: <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>
+        </p>`;
+    } else if (data.error) {
+      resultBox.innerHTML = `<p style="color: red;">${data.error}</p>`;
+    }
+  } catch (err) {
+    resultBox.innerHTML = `<p style="color: red;">An error occurred: ${err.message}</p>`;
   }
 }); 
