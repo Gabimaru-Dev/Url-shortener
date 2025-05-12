@@ -17,9 +17,9 @@ app.post('/shorten', async (req, res) => {
 
   try {
     const shortUrl = await TinyURL.shorten(longUrl);
-    res.send(`<p style="font-family: sans-serif;">Shortened URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p><a href="/">Back</a>`);
+    res.json({ shortUrl }); // <-- Send JSON, not HTML
   } catch (err) {
-    res.status(500).send(`<p>Something went wrong: ${err.message}</p><a href="/">Try Again</a>`);
+    res.status(500).json({ error: 'Something went wrong', details: err.message });
   }
 });
 
